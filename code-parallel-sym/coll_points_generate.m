@@ -1,11 +1,19 @@
 function xi_value = coll_points_generate(poly_order)
+    % dist_info.dist_type
+    % dist_info.mean
+    % dist_info.std
     if (poly_order>9)
         error('Order exceeds 9!\n');
     end
     syms x
     H = Hermite_poly(poly_order);
     xi_value = solve(H(x)==0);
-    xi_value = sort(real(double(xi_value)));
+    xi_value = real(double(xi_value));
+    % --- Sort xi points in order of increasing probability
+    pd = makedist('Normal',0,1);
+    p = pdf(pd,xi_value);
+    [~,ic] = sort(p);
+    xi_value = xi_value(ic);
 end
 
 function H = Hermite_poly(order)
