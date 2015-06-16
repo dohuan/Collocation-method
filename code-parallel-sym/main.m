@@ -8,7 +8,7 @@ clc
 run_day = 15;
 
 para_info(1).mean = 88.38;
-para_info(1).std = 51.1;
+para_info(1).std = 51.1; % 51.1
 para_info(1).name = 'ce';
 para_info(1).dist_type = 'Normal';
 
@@ -27,6 +27,7 @@ para_info(4).std = 8.2e-2;
 para_info(4).name = 'phie';
 para_info(4).dist_type = 'Normal';
 
+
 np = size(para_info,2);
 poly_order = 5;
 xi_vec = coll_points_generate(poly_order+1);
@@ -40,6 +41,8 @@ count = 2;
 coll_pts = para_value(1,:);
 coll_pts_ = xi_mat(1,:);
 
+%%                    Create set of collocation points
+% Condition on: no points to be negative
 shift_count = 1;
 while (count<1+poly_order*np)
     for i=1:np
