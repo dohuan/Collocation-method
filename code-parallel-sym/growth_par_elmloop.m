@@ -1140,7 +1140,7 @@ for nt=1:n_time
     
     out.max_diameter(nt,1) = 2*max(r_nod);
     
-    plot(z_nod, r_nod); hold on;
+    %plot(z_nod, r_nod); hold on;
     % z_nod and r_nod are column vectors
     % disp(['Saving ' num2str(nt)]);
     if WRITE_FILE

@@ -13,7 +13,7 @@ function xi_value = coll_points_generate(poly_order)
     pd = makedist('Normal',0,1);
     p = pdf(pd,xi_value);
     [~,ic] = sort(p);
-    xi_value = xi_value(ic);
+    xi_value = flipud(xi_value(ic));
 end
 
 function H = Hermite_poly(order)
