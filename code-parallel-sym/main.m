@@ -29,7 +29,7 @@ para_info(4).dist_type = 'Normal';
 
 
 np = size(para_info,2);
-poly_order = 5;
+poly_order = 7;
 xi_vec = coll_points_generate(poly_order+1);
 nxi = size(xi_vec,1);
 xi_mat = repmat(xi_vec,1,np);
@@ -37,26 +37,51 @@ xi_mat = repmat(xi_vec,1,np);
 for i=1:np
     para_value(:,i) = xi_vec*para_info(i).std + para_info(i).mean;
 end
-count = 2;
-coll_pts = para_value(1,:);
-coll_pts_ = xi_mat(1,:);
+
 
 %%                    Create set of collocation points
-% Condition on: no points to be negative
+% --- Condition on: no points to be negative
+% --- Delete all negative value in para_value
+
+count = 1;
+coll_pts = [];
+%coll_pts_ = xi_mat(1,:);
 shift_count = 1;
-while (count<1+poly_order*np)
+offset = 0;
+break_flag = 0;
+while(break_flag == 0)
+    %temp = para_value;
     for i=1:np
         temp = para_value;
-        temp(:,i) = circshift(temp(:,i),-shift_count);
-        coll_pts = [coll_pts;temp(1,:)];
-        
-        temp = xi_mat;
-        temp(:,i) = circshift(temp(:,i),-shift_count);
-        coll_pts_ = [coll_pts_;temp(1,:)];
-        
-        count = count + 1;
+        for j=1:nxi
+            if (count~=1)
+                % --- Shift one unit
+                temp(:,i) = circshift(temp(:,i),-j);
+            end
+            if (isempty(find(temp(1+offset,:)<0, 1))==1)
+                coll_pts = [coll_pts;temp(1+offset,:)];
+                count = count + 1;
+            end
+%             if (count>poly_order*np+1)
+%                 break_flag = 1;
+%                 break;
+%             end
+        end
     end
-    shift_count = shift_count + 1;
+    offset = offset + 1;
+    if (offset>nxi-1)
+        fprintf('Generate all possible collocation points:\n');
+        fprintf('Need: %d \n',(np*poly_order+1));
+        fprintf('Have: %d \n',size(unique(coll_pts,'rows'),1));
+        break_flag = 1;
+    end
+end
+
+coll_pts = unique(coll_pts,'rows','stable');
+coll_pts = coll_pts(1:np*poly_order+1,:);
+
+for i=1:np
+    coll_pts_(:,i) = (coll_pts(:,i)-para_info(i).mean)./para_info(i).std;
 end
 
 for i=1:size(coll_pts,1)
