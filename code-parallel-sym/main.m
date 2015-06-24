@@ -17,21 +17,22 @@ para_info(2).std = 699.9;
 para_info(2).name = 'ck1';
 para_info(2).dist_type = 'Normal';
 
-para_info(3).mean = 12.65;
-para_info(3).std = 23.3;
-para_info(3).name = 'ck2';
-para_info(3).dist_type = 'Normal';
-
-para_info(4).mean = 0.203;
-para_info(4).std = 8.2e-2;
-para_info(4).name = 'phie';
-para_info(4).dist_type = 'Normal';
+% para_info(3).mean = 12.65;
+% para_info(3).std = 23.3;
+% para_info(3).name = 'ck2';
+% para_info(3).dist_type = 'Normal';
+% 
+% para_info(4).mean = 0.203;
+% para_info(4).std = 8.2e-2;
+% para_info(4).name = 'phie';
+% para_info(4).dist_type = 'Normal';
 
 np = size(para_info,2);
-poly_order = 7;
+poly_order = 3;
 xi_vec = coll_points_generate(poly_order+1);
 nxi = size(xi_vec,1);
-xi_mat = repmat(xi_vec,1,np);
+colPtsNeeded = np*poly_order+1+(np); % add cross-product term
+%xi_mat = repmat(xi_vec,1,np);
 % --- para_value: [ ce,ck1, ck2, phie ]
 for i=1:np
     para_value(:,i) = xi_vec*para_info(i).std + para_info(i).mean;
@@ -44,12 +45,10 @@ end
 
 count = 1;
 coll_pts = [];
-%coll_pts_ = xi_mat(1,:);
 shift_count = 1;
 offset = 0;
 break_flag = 0;
 while(break_flag == 0)
-    %temp = para_value;
     for i=1:np
         temp = para_value;
         for j=1:nxi
@@ -61,23 +60,21 @@ while(break_flag == 0)
                 coll_pts = [coll_pts;temp(1+offset,:)];
                 count = count + 1;
             end
-%             if (count>poly_order*np+1)
-%                 break_flag = 1;
-%                 break;
-%             end
         end
     end
     offset = offset + 1;
     if (offset>nxi-1)
         fprintf('Generate all possible collocation points:\n');
-        fprintf('Need: %d \n',(np*poly_order+1));
+        fprintf('Need: %d \n',colPtsNeeded);
         fprintf('Have: %d \n',size(unique(coll_pts,'rows'),1));
         break_flag = 1;
     end
 end
-
+if (colPtsNeeded>size(unique(coll_pts,'rows'),1))
+    error('Not enough collocation points!');
+end
 coll_pts = unique(coll_pts,'rows','stable');
-coll_pts = coll_pts(1:np*poly_order+1,:);
+coll_pts = coll_pts(1:colPtsNeeded,:); 
 
 for i=1:np
     coll_pts_(:,i) = (coll_pts(:,i)-para_info(i).mean)./para_info(i).std;
@@ -94,6 +91,16 @@ for i=1:size(coll_pts,1)
         for k=1:poly_order
             Her_func = Hermite_poly(k);
             H_temp = [H_temp,Her_func(coll_pts_(i,j))];
+        end
+        % --- add cross-product term
+        if (j<np)
+            Her_func = Hermite_poly(1);
+            H_temp = [H_temp,...
+                      Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,j+1))];
+        else
+            Her_func = Hermite_poly(1);
+            H_temp = [H_temp,...
+                      Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,1))];
         end
     end
     K(i,:) = H_temp;
