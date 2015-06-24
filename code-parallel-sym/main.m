@@ -27,7 +27,6 @@ para_info(4).std = 8.2e-2;
 para_info(4).name = 'phie';
 para_info(4).dist_type = 'Normal';
 
-
 np = size(para_info,2);
 poly_order = 7;
 xi_vec = coll_points_generate(poly_order+1);
@@ -91,7 +90,6 @@ for i=1:size(coll_pts,1)
     
     % --- LHS
     H_temp = 1;
-    
     for j=1:np
         for k=1:poly_order
             Her_func = Hermite_poly(k);
