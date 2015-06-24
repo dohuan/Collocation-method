@@ -31,7 +31,9 @@ np = size(para_info,2);
 poly_order = 3;
 xi_vec = coll_points_generate(poly_order+1);
 nxi = size(xi_vec,1);
-colPtsNeeded = np*poly_order+1+(np); % add cross-product term
+
+%colPtsNeeded = np*poly_order+1+(np); % add cross-product term
+colPtsNeeded = np*poly_order+1;
 %xi_mat = repmat(xi_vec,1,np);
 % --- para_value: [ ce,ck1, ck2, phie ]
 for i=1:np
@@ -91,17 +93,18 @@ for i=1:size(coll_pts,1)
         for k=1:poly_order
             Her_func = Hermite_poly(k);
             H_temp = [H_temp,Her_func(coll_pts_(i,j))];
+            %H_temp = [H_temp,Her_func(coll_pts(i,j))];
         end
         % --- add cross-product term
-        if (j<np)
-            Her_func = Hermite_poly(1);
-            H_temp = [H_temp,...
-                      Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,j+1))];
-        else
-            Her_func = Hermite_poly(1);
-            H_temp = [H_temp,...
-                      Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,1))];
-        end
+%         if (j<np)
+%             Her_func = Hermite_poly(1);
+%             H_temp = [H_temp,...
+%                       Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,j+1))];
+%         else
+%             Her_func = Hermite_poly(1);
+%             H_temp = [H_temp,...
+%                       Her_func(coll_pts_(i,j))*Her_func(coll_pts_(i,1))];
+%         end
     end
     K(i,:) = H_temp;
     fprintf('Create CM equations... %d%%\n',round(i/size(coll_pts,1)*100));
