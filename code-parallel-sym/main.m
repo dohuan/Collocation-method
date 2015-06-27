@@ -7,16 +7,16 @@ clc
 
 run_day = 15;
 
-para_info(1).mean = 88.38;
-para_info(1).std = 51.1; % 51.1
-para_info(1).name = 'ce';
-para_info(1).dist_type = 'Normal';
-
-para_info(2).mean = 1361.12;
-para_info(2).std = 699.9;
-para_info(2).name = 'ck1';
-para_info(2).dist_type = 'Normal';
-
+% para_info(1).mean = 88.38;
+% para_info(1).std = 51.1; % 51.1
+% para_info(1).name = 'ce';
+% para_info(1).dist_type = 'Normal';
+% 
+% para_info(2).mean = 1361.12;
+% para_info(2).std = 699.9;
+% para_info(2).name = 'ck1';
+% para_info(2).dist_type = 'Normal';
+% 
 % para_info(3).mean = 12.65;
 % para_info(3).std = 23.3;
 % para_info(3).name = 'ck2';
@@ -27,19 +27,19 @@ para_info(2).dist_type = 'Normal';
 % para_info(4).name = 'phie';
 % para_info(4).dist_type = 'Normal';
 
+para_info(1).mean = 0.203;
+para_info(1).std = 8.2e-2;
+para_info(1).name = 'phie';
+para_info(1).dist_type = 'Normal';
+
 np = size(para_info,2);
 poly_order = 3;
-xi_vec = coll_points_generate(poly_order+1);
-nxi = size(xi_vec,1);
 
-%colPtsNeeded = np*poly_order+1+(np); % add cross-product term
-colPtsNeeded = np*poly_order+1;
-%xi_mat = repmat(xi_vec,1,np);
-% --- para_value: [ ce,ck1, ck2, phie ]
 for i=1:np
-    para_value(:,i) = xi_vec*para_info(i).std + para_info(i).mean;
+    [Ortho{i},para_value(:,i)] = coll_points_generate(poly_order+1,para_info(i));
 end
-
+colPtsNeeded = np*poly_order+1;
+nxi = size(para_value,1);
 
 %%                    Create set of collocation points
 % --- Condition on: no points to be negative
@@ -78,9 +78,9 @@ end
 coll_pts = unique(coll_pts,'rows','stable');
 coll_pts = coll_pts(1:colPtsNeeded,:); 
 
-for i=1:np
-    coll_pts_(:,i) = (coll_pts(:,i)-para_info(i).mean)./para_info(i).std;
-end
+%for i=1:np
+%    coll_pts_(:,i) = (coll_pts(:,i)-para_info(i).mean)./para_info(i).std;
+%end
 
 for i=1:size(coll_pts,1)
     % --- RHS
@@ -91,8 +91,9 @@ for i=1:size(coll_pts,1)
     H_temp = 1;
     for j=1:np
         for k=1:poly_order
-            Her_func = Hermite_poly(k);
-            H_temp = [H_temp,Her_func(coll_pts_(i,j))];
+            %ortho_func = Hermite_poly(k);
+            ortho_func = Ortho{j}.H{k};
+            H_temp = [H_temp,ortho_func(coll_pts(i,j))];
             %H_temp = [H_temp,Her_func(coll_pts(i,j))];
         end
         % --- add cross-product term
@@ -131,9 +132,9 @@ for i=1:size(para_span,1)
     y_temp = CM_coeff(1);
     for j=1:np
         for k=1:poly_order
-            Her_func = Hermite_poly(k);
+            ortho_func = Hermite_poly(k);
             y_temp = y_temp + ...
-                CM_coeff((j-1)*poly_order+k+1)*Her_func((para_span(i,j)-para_info(j).mean)/para_info(j).std);
+                CM_coeff((j-1)*poly_order+k+1)*ortho_func((para_span(i,j)-para_info(j).mean)/para_info(j).std);
         end
     end
 end
