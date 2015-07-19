@@ -31,3 +31,16 @@ for i=1:9
 	%hold off
 	
 end
+
+for i=1:size(coll_pts,1)
+    % --- LHS
+    H_temp = 1;
+    for j=1:np
+        for k=1:poly_order
+            ortho_func = Ortho{j}.H{k};
+            H_temp = [H_temp,ortho_func(coll_pts(i,j))];
+        end
+    end
+    K(i,:) = H_temp;
+    fprintf('Create CM equations... %d%%\n',round(i/size(coll_pts,1)*100));
+end
