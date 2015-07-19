@@ -1,39 +1,60 @@
-function out = ortho_poly(order,dinfo)
+function [out,root_poly] = ortho_poly(order,dinfo)
 %%     Return orthogonal polynomial for arbitrary normal distribution
 % dist_type.name dist_type.mean dist_type.std
 syms x
 
-if (order==0)
-    out.H = 1;
-    out.h = 1;
-else
-    for i=1:order
-        if (i==1)
-            H{i} = matlabFunction(x-ortho_int(@(x)x,@(x)x.*0+1,dinfo));
-            h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
-        elseif(i==2)
-            temp = matlabFunction(x.*h{1}(x));
-            H{i} = matlabFunction(x.*h{1}(x)-ortho_int(@(x)temp(x),@(x)h{1}(x),dinfo)*h{1}(x)-...
-                sqrt(ortho_int(@(x)H{1}(x),@(x)H{1}(x),dinfo)));
-            h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
-        else
-            temp = matlabFunction(x.*h{i-1}(x));
-            H{i} = matlabFunction(x.*h{i-1}(x)-ortho_int(@(x)temp(x),@(x)h{i-1}(x),dinfo)*h{i-1}(x)-...
-                sqrt(ortho_int(@(x)H{i-1}(x),@(x)H{i-1}(x),dinfo))*h{i-2}(x));
-            h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
-        end
-        out.H = H;
-        out.h = h;
+n = order+1;
+
+H{1} = @(x)x.*0;
+h{1} = @(x)x.*0;
+
+H{2} = @(x)x.*0+1;
+h{2} = @(x)x.*0+1;
+
+for i=3:n+2
+    if(i==n+2)
+        temp = matlabFunction(x.*h{i-1}(x));
+        root_poly.H = matlabFunction(x.*h{i-1}(x)-ortho_int(@(x)temp(x),@(x)h{i-1}(x),dinfo)*h{i-1}(x)-...
+            sqrt(ortho_int(@(x)H{i-1}(x),@(x)H{i-1}(x),dinfo))*h{i-2}(x));
+        root_poly.h = matlabFunction(root_poly.H(x)/sqrt(ortho_int(@(x)root_poly.H(x),@(x)root_poly.H(x),dinfo)));
+    else
+        temp = matlabFunction(x.*h{i-1}(x));
+        H{i} = matlabFunction(x.*h{i-1}(x)-ortho_int(@(x)temp(x),@(x)h{i-1}(x),dinfo)*h{i-1}(x)-...
+            sqrt(ortho_int(@(x)H{i-1}(x),@(x)H{i-1}(x),dinfo))*h{i-2}(x));
+        h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
     end
 end
 
+% for i=2:order+2
+%     if (i==1)
+%         H{i} = matlabFunction(x-ortho_int(@(x)x,@(x)x.*0+1,dinfo));
+%         h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
+%     elseif(i==2)
+%         temp = matlabFunction(x.*h{1}(x));
+%         H{i} = matlabFunction(x.*h{1}(x)-ortho_int(@(x)temp(x),@(x)h{1}(x),dinfo)*h{1}(x)-...
+%             sqrt(ortho_int(@(x)H{1}(x),@(x)H{1}(x),dinfo)));
+%         h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
+%     elseif(i==order+2) % Create n+1 order poly for roots
+%         temp = matlabFunction(x.*h{i-1}(x));
+%         root_poly.H = matlabFunction(x.*h{i-1}(x)-ortho_int(@(x)temp(x),@(x)h{i-1}(x),dinfo)*h{i-1}(x)-...
+%             sqrt(ortho_int(@(x)H{i-1}(x),@(x)H{i-1}(x),dinfo))*h{i-2}(x));
+%         root_poly.h = matlabFunction(root_poly.H(x)/sqrt(ortho_int(@(x)root_poly.H(x),@(x)root_poly.H(x),dinfo)));
+%     else
+%         temp = matlabFunction(x.*h{i-1}(x));
+%         H{i} = matlabFunction(x.*h{i-1}(x)-ortho_int(@(x)temp(x),@(x)h{i-1}(x),dinfo)*h{i-1}(x)-...
+%             sqrt(ortho_int(@(x)H{i-1}(x),@(x)H{i-1}(x),dinfo))*h{i-2}(x));
+%         h{i} = matlabFunction(H{i}(x)/sqrt(ortho_int(@(x)H{i}(x),@(x)H{i}(x),dinfo)));
+%     end
+% end
+out.H = H(2:n+1);
+out.h = h(2:n+1);
 end
 
 function out = ortho_int(p1,p2,dinfo)
 syms x   % sig mu
 mean = dinfo.mean;
 sig = dinfo.std;
-dist_type = 1; % 0: normal dist 1: inverse Gamma
+dist_type = 1; % 0: normal dist 1: inverse Gaussian dist
 if(dist_type==0)
     d_func = @(x)1./(sig*sqrt(2*pi))*exp(-((x-mean).^2)/(2*sig^2));
     lim = [-inf inf];

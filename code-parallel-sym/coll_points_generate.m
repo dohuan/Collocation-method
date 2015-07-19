@@ -4,8 +4,10 @@ function [Ortho, col_pts] = coll_points_generate(poly_order,dinfo)
     end
     syms x
     %H = Hermite_poly(poly_order);
-    Ortho = ortho_poly(poly_order,dinfo);
-    col_pts = solve(Ortho.H{poly_order}(x)==0);
+    [Ortho,root_poly] = ortho_poly(poly_order,dinfo);
+    
+    col_pts = solve(root_poly.H(x)==0);
+    
     col_pts = real(double(col_pts));
     % --- Sort xi points in order of increasing probability
     pd = makedist('Normal',dinfo.mean,dinfo.std);

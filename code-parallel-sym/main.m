@@ -36,7 +36,8 @@ np = size(para_info,2);
 poly_order = 3;
 
 for i=1:np
-    [Ortho{i},para_value(:,i)] = coll_points_generate(poly_order+1,para_info(i));
+    %[Ortho{i},para_value(:,i)] = coll_points_generate(poly_order+1,para_info(i));
+    [Ortho{i},para_value(:,i)] = coll_points_generate(poly_order,para_info(i));
 end
 colPtsNeeded = np*poly_order+1;
 nxi = size(para_value,1);
@@ -84,8 +85,8 @@ for k1=1:poly_order+1
     for k2=1:poly_order+1
         for k3=1:poly_order+1
             for k4=1:poly_order+1
-                coll_pts = [coll_pts;[para_value(1,k1) para_value(2,k2)...
-                                       para_value(3,k3) para_value(4,k4)]];
+                coll_pts = [coll_pts;[para_value(k1,1) para_value(k2,2)...
+                                       para_value(k3,3) para_value(k4,4)]];
             end
         end
     end
