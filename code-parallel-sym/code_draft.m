@@ -57,3 +57,11 @@ plot(coll_pts(:,3),'b--');
 plot(coll_pts(:,4),'k--');
 legend('ce','ck1','ck2','phie');
 set(gca,'yscale','log');
+
+
+% ----------Test gen_ig.m-------------
+hist_range = 0:0.1:3;
+lambda = .2;
+mu = 3;
+h = gen_ig(300,lambda,mu);
+hist(h,200);

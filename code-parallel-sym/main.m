@@ -147,22 +147,60 @@ fprintf('There are %d NaNs in y_fem\n',nancount);
 CM_coeff = K\y_fem;
 
 %% Run two methods through a span of parameters
-para_span = parameter_generate(para_info);
-for i=1:size(para_span,1)
-    out = AAA_main(0.01, 0.01, run_day, 'test','true',para_span(i,:));
-    y_FEM(i,1) = max(out.max_diameter);
-    
-    y_temp = CM_coeff(1);
-    for j=1:np
-        for k=1:poly_order
-            ortho_func = Hermite_poly(k);
-            y_temp = y_temp + ...
-                CM_coeff((j-1)*poly_order+k+1)*ortho_func((para_span(i,j)-para_info(j).mean)/para_info(j).std);
-        end
-    end
+% para_span = parameter_generate(para_info);
+% for i=1:size(para_span,1)
+%     out = AAA_main(0.01, 0.01, run_day, 'test','true',para_span(i,:));
+%     y_FEM(i,1) = max(out.max_diameter);
+%     
+%     y_temp = CM_coeff(1);
+%     for j=1:np
+%         for k=1:poly_order
+%             ortho_func = Hermite_poly(k);
+%             y_temp = y_temp + ...
+%                 CM_coeff((j-1)*poly_order+k+1)*ortho_func((para_span(i,j)-para_info(j).mean)/para_info(j).std);
+%         end
+%     end
+% end
+
+% --- Generate parameters that have inverse Gaussian distribution
+iter = 100;
+for i=1:np
+    mean = para_info(i).mean;
+    sig = para_info(i).std;
+    para_test(:,i) = gen_ig(iter,mean,mean^3/sig^2);
 end
-
 %% Run MC on FEM model
-
+tic
+for i=1:iter
+    out = AAA_main(0.01, 0.01, run_day, 'test','true',para_test(i,:));
+    y_fem_test(i,1) = max(out.max_diameter);
+end
+time_FEM = toc/60;
+fprintf('Collapsed time for FEM: %.2f mins \n',time_FEM);
 
 %% Run MC on CM model
+tic
+for i=1:iter
+    H_temp = [];
+    for k1=1:poly_order+1
+        for k2=1:poly_order+1
+            for k3=1:poly_order+1
+                for k4=1:poly_order+1
+                    H_temp = [H_temp,Ortho{1}.H{k1}(para_test(i,:))*Ortho{2}.H{k2}(para_test(i,:))*...
+                        Ortho{3}.H{k3}(para_test(i,:))*Ortho{4}.H{k4}(para_test(i,:))];
+                end
+            end
+        end
+    end
+    y_cm_test(i,1) = H_temp*CM_coeff;
+    
+end
+time_CM = toc/60;
+fprintf('Collapsed time for FEM: %.2f mins \n',time_CM);
+
+plot(y_fem_test,'b','LineWIdth',2);
+hold on
+plot(y_fem_test,'r','LineWIdth',2);
+hold off
+legend('FEM','CM');
+set(gca,'FontSize',16);
