@@ -165,9 +165,9 @@ CM_coeff = K\y_fem;
 % --- Generate parameters that have inverse Gaussian distribution
 iter = 100;
 for i=1:np
-    mu_ = para_info(i).mean;
+    mean = para_info(i).mean;
     sig = para_info(i).std;
-    para_test(:,i) = gen_ig(iter,mu_,mu_^3/sig^2);
+    para_test(:,i) = gen_ig(iter,mean,mean^3/sig^2);
 end
 %% Run MC on FEM model
 tic
@@ -196,7 +196,7 @@ for i=1:iter
     y_cm_test(i,1) = H_temp*CM_coeff;
 end
 time_CM = toc/60;
-fprintf('Collapsed time for CM: %.2f mins \n',time_CM);
+fprintf('Collapsed time for FEM: %.2f mins \n',time_CM);
 
 plot(y_fem_test,'b','LineWIdth',2);
 hold on
