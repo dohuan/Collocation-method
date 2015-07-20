@@ -44,3 +44,16 @@ for i=1:size(coll_pts,1)
     K(i,:) = H_temp;
     fprintf('Create CM equations... %d%%\n',round(i/size(coll_pts,1)*100));
 end
+
+
+% ------------------
+subplot(2,1,1)
+plot(y_fem,'b-');
+subplot(2,1,2)
+hold on
+plot(coll_pts(:,1),'r--');
+plot(coll_pts(:,2),'g--');
+plot(coll_pts(:,3),'b--');
+plot(coll_pts(:,4),'k--');
+legend('ce','ck1','ck2','phie');
+set(gca,'yscale','log');
