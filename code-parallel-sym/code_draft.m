@@ -65,3 +65,24 @@ lambda = .2;
 mu = 3;
 h = gen_ig(300,lambda,mu);
 hist(h,200);
+
+% -----------------
+for i=1:4
+	subplot(2,2,1)
+	hist(para_test(:,1),700);
+	title('ce');
+	set(gca,'FontSize',16);
+	subplot(2,2,2)
+	hist(para_test(:,2),700);
+	title('ck1');
+	set(gca,'FontSize',16);
+	subplot(2,2,3)
+	hist(para_test(:,3),700);
+	title('ck2');
+	set(gca,'FontSize',16);
+	subplot(2,2,4)
+	hist(para_test(:,4),700);
+	title('phie');
+	set(gca,'FontSize',16);
+end
+set(gca,'FontSize',16);
