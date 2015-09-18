@@ -59,6 +59,7 @@ legend('ce','ck1','ck2','phie');
 set(gca,'yscale','log');
 
 
+
 % ----------Test gen_ig.m-------------
 hist_range = 0:0.1:3;
 lambda = .2;
@@ -86,3 +87,36 @@ for i=1:4
 	set(gca,'FontSize',16);
 end
 set(gca,'FontSize',16);
+
+
+
+
+% ------- Check matpool
+para = [1.4704e+002  3.1804e+003  2.1766e+001 0.203];
+run_day = 500;
+tic
+out = AAA_main(0.01, 0.01, run_day, 'test','true',para);
+col_time = toc;
+fprintf('Collapsed time for CM: %.2f mins \n',col_time/60);
+
+
+
+% -------------------------
+count = 1;
+for i=1:size(y_cm_test,1)
+    if (y_cm_test(i)>2.0&&y_cm_test(i)<2.4)
+        a(count) = y_cm_test(i);
+        count = count + 1;
+    end
+end
+
+for i=1:size(y_cm_test,1)
+    if (y_cm_test(i)>2.0&&y_cm_test(i)<2.4)
+        b(i,1) = y_cm_test(i);
+        
+    else
+        b(i,1) = 0;
+    end
+end
+
+

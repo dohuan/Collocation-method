@@ -39,8 +39,8 @@ for i=1:np
     %[Ortho{i},para_value(:,i)] = coll_points_generate(poly_order+1,para_info(i));
     [Ortho{i},para_value(:,i)] = coll_points_generate(poly_order,para_info(i));
 end
-colPtsNeeded = np*poly_order+1;
-nxi = size(para_value,1);
+%colPtsNeeded = np*poly_order+1;
+%nxi = size(para_value,1);
 
 %%                    Create set of collocation points
 % --- Condition on: no points to be negative
@@ -163,11 +163,11 @@ CM_coeff = K\y_fem;
 % end
 
 % --- Generate parameters that have inverse Gaussian distribution
-iter = 100;
+iter = 100; % MCMC runs 
 for i=1:np
     mu_ = para_info(i).mean;
     sig = para_info(i).std;
-    para_test(:,i) = gen_ig(iter,mu_,mu_^3/sig^2);
+    para_test(:,i) = gen_ig(iter,mu_,mu_^3/sig^2); % inverse Gaussian
 end
 %% Run MC on FEM model
 tic
@@ -179,7 +179,7 @@ end
 time_FEM = toc/60;
 fprintf('Collapsed time for FEM: %.2f mins \n',time_FEM);
 
-%% Run MC on CM model
+%% Run PCM on CM model
 tic
 for i=1:iter
     H_temp = [];

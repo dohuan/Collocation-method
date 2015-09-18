@@ -26,9 +26,9 @@ format long e;
 % ---- Parameter declaration ----
 % kc = [c_e,c_k1,c_k2,c_m1,c_m2]
 %kc = [1.4704e+002  3.1804e+003  2.1766e+001  8.3965e+001  5.4094e+000];
-kc = [para(1)  para(2)  2.1766e+001  8.3965e+001  5.4094e+000];
-%nu_e0 = para(4);  % ~ phi_e :mass fraction of elastin at an initial state
-nu_e0 = 0.203;  % ~ phi_e :mass fraction of elastin at an initial state
+kc = [para(1)  para(2)  para(3)  8.3965e+001  5.4094e+000];
+nu_e0 = para(4);  % ~ phi_e :mass fraction of elastin at an initial state
+%nu_e0 = 0.203;  % ~ phi_e :mass fraction of elastin at an initial state
 
 n_elm=300;             %number of element
 n_dt = 1/5;             %time steps in a day
@@ -100,8 +100,28 @@ H_h = P_a*r_h/stress;
 %fa_init(name,Data_t0); %without initial damage
 
 if parallel
+	% --- Create worker pool
+	N = 5;
+	poolobj = gcp('nocreate');
+	if isempty(poolobj)
+		poolsize = 0;
+	else
+		poolsize = poolobj.NumWorkers;
+	end
+
+	if poolsize == 0
+		parpool('local',N);
+	else
+		if poolsize~=N
+			delete(poolobj);
+			parpool('local',N);
+		end
+	end
+
     result = growth_par_elmloop(damage_params, days, k_sigma_f, ...
         k_sigma_m, name, Length, n_dt, floor(100*n_dt), kc, P_a, r_h, H_h, nu_e0, nu_f0, nu_m0, phi0, G_h, G_e, G_m, Sa, La_M, La_0, sigma_f0, sigma_m0, n_elm, kq_c, kq_m, age_max, op_time);
+		
+	delete(poolobj);
 else
     % global kc P_a r_h H_h nu_e0 nu_f0 nu_m0 phi0 G_h G_e G_m Sa La_M La_0 sigma_f0 sigma_m0 n_elm kq_c kq_m age_max op_time; %#ok<TLEV>
     growth(days, k_sigma_f, k_sigma_m, name, Length, n_dt, floor(100*n_dt));
