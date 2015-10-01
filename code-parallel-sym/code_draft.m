@@ -103,6 +103,8 @@ fprintf('Collapsed time for CM: %.2f mins \n',col_time/60);
 
 % -------------------------
 count = 1;
+a = [];
+b = [];
 for i=1:size(y_cm_test,1)
     if (y_cm_test(i)>2.0&&y_cm_test(i)<2.4)
         a(count) = y_cm_test(i);
@@ -110,13 +112,36 @@ for i=1:size(y_cm_test,1)
     end
 end
 
+count = 1;
+for i=1:size(y_fem_test,1)
+    if isnan(y_fem_test(i))~=1
+        b(count) = y_fem_test(i);
+		count = count + 1;
+    end
+end
+
+subplot(1,2,1)
+[ha,xa] = hist(a,100);
+ha = ha./sum(ha);
+bar(xa,ha);
+title('CM')
+ylabel('Probabilities')
+subplot(1,2,2)
+[hb,xb] = hist(b,100);
+hb = hb./sum(hb);
+bar(xb,hb);
+title('FEM')
+ylabel('Probabilities')
+
+
+
 for i=1:size(y_cm_test,1)
     if (y_cm_test(i)>2.0&&y_cm_test(i)<2.4)
         b(i,1) = y_cm_test(i);
-        
     else
         b(i,1) = 0;
     end
 end
+
 
 
