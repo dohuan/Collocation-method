@@ -1,5 +1,5 @@
 function y = gen_ig(n,lambda,mu)
-
+%% Crappy one!!
 tolerance = 1e-4;
 
 % uniformly distributed random variable

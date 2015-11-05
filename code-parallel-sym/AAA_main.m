@@ -124,7 +124,10 @@ if parallel
 	delete(poolobj);
 else
     % global kc P_a r_h H_h nu_e0 nu_f0 nu_m0 phi0 G_h G_e G_m Sa La_M La_0 sigma_f0 sigma_m0 n_elm kq_c kq_m age_max op_time; %#ok<TLEV>
-    growth(days, k_sigma_f, k_sigma_m, name, Length, n_dt, floor(100*n_dt));
+    
+	%growth(days, k_sigma_f, k_sigma_m, name, Length, n_dt, floor(100*n_dt));
+	result = growth_par_elmloop(damage_params, days, k_sigma_f, ...
+        k_sigma_m, name, Length, n_dt, floor(100*n_dt), kc, P_a, r_h, H_h, nu_e0, nu_f0, nu_m0, phi0, G_h, G_e, G_m, Sa, La_M, La_0, sigma_f0, sigma_m0, n_elm, kq_c, kq_m, age_max, op_time);
 end
 
 % clear *

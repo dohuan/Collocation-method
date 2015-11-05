@@ -5,7 +5,7 @@ clc
 % ce,ck1, ck2, phie : parameters, conditioned at age 45
 % result = AAA_main(0.01, 0.01, run_day, 'test','true');
 
-run_day = 15;
+run_day = 100;
 
 para_info(1).mean = 88.38;
 para_info(1).std = 51.1; % 51.1
@@ -92,9 +92,27 @@ for k1=1:poly_order+1
     end
 end
 
-for i=1:size(coll_pts,1)
+% --- Create worker pool
+N = ;
+poolobj = gcp('nocreate');
+if isempty(poolobj)
+	poolsize = 0;
+else
+	poolsize = poolobj.NumWorkers;
+end
+
+if poolsize == 0
+	parpool('local',N);
+else
+	if poolsize~=N
+		delete(poolobj);
+		parpool('local',N);
+	end
+end
+y_fem = zeros(size(coll_pts,1),1);
+parfor i=1:size(coll_pts,1)
     % --- RHS
-    out = AAA_main(0.01, 0.01, run_day, 'test','true',coll_pts(i,:));
+    out = AAA_main(0.01, 0.01, run_day, 'test','false',coll_pts(i,:));
     y_fem(i,1) = max(out.max_diameter);
     
     % --- LHS
@@ -133,6 +151,7 @@ for i=1:size(coll_pts,1)
     K(i,:) = H_temp;
     fprintf('Create CM equations... %d%%\n',round(i/size(coll_pts,1)*100));
 end
+delete(poolobj);
 
 nancount = 0;
 mean_y = nanmean(y_fem);
@@ -166,16 +185,38 @@ CM_coeff = K\y_fem;
 iter = 100; % MCMC runs 
 for i=1:np
     mu_ = para_info(i).mean;
-    sig = para_info(i).std;
-    para_test(:,i) = gen_ig(iter,mu_,mu_^3/sig^2); % inverse Gaussian
+    std_ = para_info(i).std;
+    pd =  makedist('InverseGaussian','mu',mu_,'lambda',mu_^3/std_2);
+    %para_test(:,i) = gen_ig(iter,mu_,mu_^3/std_^2); % inverse Gaussian
+    para_test(:,i) = random(pd, iter, 1); % inverse Gaussian
 end
 %% Run MC on FEM model
 tic
+y_fem_test = zeros(iter,1);
+% --- Create worker pool
+poolobj = gcp('nocreate');
+if isempty(poolobj)
+	poolsize = 0;
+else
+	poolsize = poolobj.NumWorkers;
+end
+
+if poolsize == 0
+	parpool('local',N);
+else
+	if poolsize~=N
+		delete(poolobj);
+		parpool('local',N);
+	end
+end
+
 for i=1:iter
-    out = AAA_main(0.01, 0.01, run_day, 'test','true',para_test(i,:));
+    out = AAA_main(0.01, 0.01, run_day, 'test','false',para_test(i,:));
     y_fem_test(i,1) = max(out.max_diameter);
     fprintf('Run FEM test... %d%%\n',round(i/iter*100));
 end
+delete(poolobj);
+
 time_FEM = toc/60;
 fprintf('Collapsed time for FEM: %.2f mins \n',time_FEM);
 
@@ -198,13 +239,15 @@ end
 time_CM = toc/60;
 fprintf('Collapsed time for CM: %.2f mins \n',time_CM);
 
-plot(y_fem_test,'b','LineWIdth',2);
-hold on
-plot(y_cm_test,'r','LineWIdth',2);
-hold off
-legend('FEM','CM');
-set(gca,'FontSize',16);
+save('./results/101615');
 
-figure(2);
-err_test = sqrt((y_cm_test-y_fem_test).^2);
-plot(err_test,'b','LineWidth',2);
+%plot(y_fem_test,'b','LineWIdth',2);
+%hold on
+%plot(y_cm_test,'r','LineWIdth',2);
+%hold off
+%legend('FEM','CM');
+%set(gca,'FontSize',16);
+
+%figure(2);
+%err_test = sqrt((y_cm_test-y_fem_test).^2);
+%plot(err_test,'b','LineWidth',2);
