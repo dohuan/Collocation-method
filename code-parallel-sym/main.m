@@ -93,7 +93,7 @@ for k1=1:poly_order+1
 end
 
 % --- Create worker pool
-N = ;
+N = 5;
 poolobj = gcp('nocreate');
 if isempty(poolobj)
 	poolsize = 0;
