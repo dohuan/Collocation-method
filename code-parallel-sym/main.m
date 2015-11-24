@@ -11,11 +11,13 @@ para_info(1).mean = 88.38;
 para_info(1).std = 51.1; % 51.1
 para_info(1).name = 'ce';
 para_info(1).dist_type = 'Normal';
+para_info(1).trunc = [10 200];
 
 para_info(2).mean = 1361.12;
 para_info(2).std = 699.9;
 para_info(2).name = 'ck1';
 para_info(2).dist_type = 'Normal';
+
 
 para_info(3).mean = 12.65;
 para_info(3).std = 23.3;
@@ -92,23 +94,24 @@ for k1=1:poly_order+1
     end
 end
 
-% --- Create worker pool
-N = 5;
-poolobj = gcp('nocreate');
-if isempty(poolobj)
-	poolsize = 0;
-else
-	poolsize = poolobj.NumWorkers;
-end
+% --- Create worker pool (comment for local machine)
+% N = 5;
+% poolobj = gcp('nocreate');
+% if isempty(poolobj)
+% 	poolsize = 0;
+% else
+% 	poolsize = poolobj.NumWorkers;
+% end
+% 
+% if poolsize == 0
+% 	parpool('local',N);
+% else
+% 	if poolsize~=N
+% 		delete(poolobj);
+% 		parpool('local',N);
+% 	end
+% end
 
-if poolsize == 0
-	parpool('local',N);
-else
-	if poolsize~=N
-		delete(poolobj);
-		parpool('local',N);
-	end
-end
 y_fem = zeros(size(coll_pts,1),1);
 parfor i=1:size(coll_pts,1)
     % --- RHS

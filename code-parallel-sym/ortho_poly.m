@@ -54,7 +54,7 @@ function out = ortho_int(p1,p2,dinfo)
 syms x   % sig mu
 mean = dinfo.mean;
 sig = dinfo.std;
-dist_type = 1; % 0: normal dist 1: inverse Gaussian dist
+dist_type = 2; % 0: normal dist 1: inverse Gaussian dist 2: truncated Gaussian
 if(dist_type==0)
     d_func = @(x)1./(sig*sqrt(2*pi))*exp(-((x-mean).^2)/(2*sig^2));
     lim = [-inf inf];
@@ -65,6 +65,16 @@ elseif(dist_type==1)
     % gamma(mean.^2./sig+2).*x.^(-(mean.^2./sig+2)-1).*exp(-(mean.*(mean.^2./sig+1)).*x.^(-1));
     d_func = @(x)pdf('InverseGaussian',x,mean,mean^3/sig^2);
     lim = [0 inf];
+elseif(dist_type==2)
+    if (isfield(dinfo,'trunc')==0)
+        error('No truncate info!\n');
+    end
+    %tmp = @(x)pdf('Normal',x,mean,sig);
+    %d_func = truncate(tmp,0,inf);
+    d_func = @(x)1./(sig*sqrt(2*pi))*exp(-((x-mean).^2)/(2*sig^2));
+    weight = integral(@(x)d_func(x),dinfo.trunc(1),dinfo.trunc(2));
+    d_func = @(x)1./(sig*sqrt(2*pi))*exp(-((x-mean).^2)/(2*sig^2))./weight;
+    lim = [dinfo.trunc(1) dinfo.trunc(2)];
 end
 temp = @(x)p1(x).*p2(x).*d_func(x);
 %temp = matlabFunction(p1(x)*p2(x)*d_func(x));
